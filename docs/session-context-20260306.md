@@ -7,7 +7,7 @@ Build a global OpenCode plugin named `Akane` that reuses OpenCode's provider and
 ## Naming
 
 - Service name: `Akane`
-- Working repo path: `~/Desktop/Projects/akane-agnets`
+- Working repo path: `~/Desktop/Projects/akane-agents`
 - Planned plugin file: `~/.config/opencode/plugins/akane.js`
 - Planned global config file: `~/.config/opencode/akane.json`
 
