@@ -16,6 +16,7 @@
     }
   },
   "workflow": {
+    "preferAgents": false,
     "stageOrder": [
       "plan",
       "plan-review",

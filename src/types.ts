@@ -24,6 +24,7 @@ export interface AkaneConfig {
   };
   workflow: {
     stageOrder: AkaneStageId[];
+    preferAgents: boolean;
   };
   roleAgents: AkaneRoleAgents;
   roles: AkaneRoles;

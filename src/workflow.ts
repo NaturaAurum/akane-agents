@@ -234,6 +234,10 @@ async function resolveAgentName(
   role: AkaneRoleId,
   config: AkaneConfig,
 ): Promise<string | undefined> {
+  if (!config.workflow.preferAgents) {
+    return undefined;
+  }
+
   const candidates = [
     config.roleAgents[role],
     ...DEFAULT_ROLE_AGENT_CANDIDATES[role],

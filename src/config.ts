@@ -95,6 +95,7 @@ export function defaultAkaneConfig(
     },
     workflow: {
       stageOrder: [...DEFAULT_STAGE_ORDER],
+      preferAgents: false,
     },
     roleAgents: { ...DEFAULT_ROLE_AGENTS },
     roles: { ...DEFAULT_ROLE_MODELS },
@@ -229,6 +230,11 @@ export function mergeAkaneConfig(
         isRecord(overrides.workflow) ? overrides.workflow.stageOrder : undefined,
         base.workflow.stageOrder,
       ),
+      preferAgents:
+        isRecord(overrides.workflow) &&
+        typeof overrides.workflow.preferAgents === "boolean"
+          ? overrides.workflow.preferAgents
+          : base.workflow.preferAgents,
     },
     roleAgents: normalizeRoleAgents(overrides.roleAgents, base.roleAgents),
     roles: normalizeRoles(overrides.roles, base.roles),
