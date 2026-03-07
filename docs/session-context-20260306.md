@@ -23,13 +23,13 @@ Build a global OpenCode plugin named `Akane` that reuses OpenCode's provider and
 ## Role Mapping
 
 - `planner` -> `anthropic/claude-opus-4-6`
-- `plan_reviewer` -> `openai/gpt-5.3-codex`
-- `implementer` -> `openai/gpt-5.3-codex`
+- `plan_reviewer` -> `openai/gpt-5.4`
+- `implementer` -> `openai/gpt-5.4`
 - `consultant_primary` -> `anthropic/claude-opus-4-6`
 - `consultant_secondary` -> `anthropic/claude-sonnet-4-6`
-- `reviewer_codex` -> `openai/gpt-5.3-codex`
+- `reviewer_codex` -> `openai/gpt-5.4`
 - `reviewer_claude` -> `anthropic/claude-opus-4-6`
-- `synthesizer` -> `openai/gpt-5.3-codex`
+- `synthesizer` -> `openai/gpt-5.4`
 
 ## Architectural Decisions
 
@@ -89,6 +89,7 @@ Start with:
 
 ## Notes
 
-- `gpt-5.4` was not available in the current OpenCode model list
-- `openai/gpt-5.3-codex` is available and should be the current Codex baseline
+- As of 2026-03-07, `opencode models openai --refresh` shows `openai/gpt-5.4`
+- As of 2026-03-07, OpenCode does not list `openai/gpt-5.4-codex`
+- `openai/gpt-5.4` should be the current OpenAI baseline for Akane roles
 - `superpowers` active remnants were removed from `~/.config/opencode`

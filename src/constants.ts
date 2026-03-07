@@ -26,13 +26,13 @@ export const AKANE_ROLE_IDS = [
 
 export const DEFAULT_ROLE_MODELS = {
   planner: "anthropic/claude-opus-4-6",
-  plan_reviewer: "openai/gpt-5.3-codex",
-  implementer: "openai/gpt-5.3-codex",
+  plan_reviewer: "openai/gpt-5.4",
+  implementer: "openai/gpt-5.4",
   consultant_primary: "anthropic/claude-opus-4-6",
   consultant_secondary: "anthropic/claude-sonnet-4-6",
-  reviewer_codex: "openai/gpt-5.3-codex",
+  reviewer_codex: "openai/gpt-5.4",
   reviewer_claude: "anthropic/claude-opus-4-6",
-  synthesizer: "openai/gpt-5.3-codex",
+  synthesizer: "openai/gpt-5.4",
 } as const;
 
 export const DEFAULT_STAGE_FILES = {
