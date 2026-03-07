@@ -1,18 +1,37 @@
 {
-  "name": "akane-agents",
+  "name": "opencode-akane",
   "version": "0.1.0",
-  "private": true,
+  "description": "Akane orchestration plugin for OpenCode",
+  "license": "UNLICENSED",
   "type": "module",
-  "description": "Akane OpenCode orchestration plugin MVP scaffold",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "examples/akane.example.json"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
+    "clean": "rm -rf dist",
     "build": "tsc -p tsconfig.json",
-    "typecheck": "tsc --noEmit -p tsconfig.json"
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "pack:check": "npm pack --dry-run",
+    "prepublishOnly": "bun run clean && bun run build && bun run typecheck"
   },
   "dependencies": {
     "@opencode-ai/plugin": "1.2.20"
   },
   "devDependencies": {
-    "@types/node": "^24.3.0",
-    "typescript": "^5.9.2"
+    "@types/node": "^24.12.0",
+    "typescript": "^5.9.3"
   }
 }

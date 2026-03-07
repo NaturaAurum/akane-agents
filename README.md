@@ -29,4 +29,43 @@ bun run typecheck
 bun run build
 ```
 
-The build emits `dist/akane.js`, which is the intended plugin artifact to link or copy to `~/.config/opencode/plugins/akane.js`.
+The build emits `dist/index.js` as the package entrypoint and also keeps `dist/akane.js` for local file-based linking.
+
+## Package install
+
+For package-based installation, publish this repository to npm and add it to the OpenCode plugin array in `~/.config/opencode/opencode.json`:
+
+```json
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "oh-my-opencode@latest",
+    "opencode-akane@0.1.0"
+  ]
+}
+```
+
+Akane still reads its runtime config from `~/.config/opencode/akane.json`.
+
+## Publish flow
+
+The package is prepared to publish from npm with:
+
+```bash
+bun install
+bun run typecheck
+bun run build
+npm publish
+```
+
+Useful checks before publishing:
+
+```bash
+bun run pack:check
+```
+
+Notes:
+
+- The current package name assumption is `opencode-akane`
+- The current license is `UNLICENSED`; set an explicit open-source or commercial license before a public release if needed
+- If you later switch to a scoped package name, publish with `npm publish --access public`
