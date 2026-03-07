@@ -1,6 +1,6 @@
 {
   "name": "opencode-akane",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Akane orchestration plugin for OpenCode",
   "license": "MIT",
   "type": "module",
