@@ -69,3 +69,27 @@ Notes:
 - The current package name assumption is `opencode-akane`
 - The current license is `UNLICENSED`; set an explicit open-source or commercial license before a public release if needed
 - If you later switch to a scoped package name, publish with `npm publish --access public`
+
+## Automated publishing
+
+This repository includes GitHub Actions workflows for CI and npm publishing:
+
+- `.github/workflows/ci.yml`: runs install, typecheck, build, and `npm pack --dry-run`
+- `.github/workflows/publish.yml`: publishes to npm when a tag like `v0.1.0` is pushed
+
+Recommended setup for public release:
+
+1. Make the GitHub repository public
+2. Publish `opencode-akane` once manually from your npm account, or reserve the package name
+3. In npm package settings, add a Trusted Publisher for:
+   - GitHub owner: `NaturaAurum`
+   - Repository: `akane-agents`
+   - Workflow filename: `publish.yml`
+4. Push a version tag that matches `package.json`, for example:
+
+```bash
+git tag v0.1.0
+git push origin main --tags
+```
+
+The publish workflow intentionally uses npm trusted publishing with GitHub OIDC instead of an `NPM_TOKEN`.
