@@ -1,0 +1,38 @@
+{
+  "version": 1,
+  "serviceName": "Akane",
+  "pluginOutputPath": "~/.config/opencode/plugins/akane.js",
+  "globalConfigPath": "~/.config/opencode/akane.json",
+  "artifacts": {
+    "dir": ".opencode/akane",
+    "stateFile": "state.json",
+    "files": {
+      "plan": "plan.md",
+      "plan-review": "plan-review.md",
+      "implementation-context": "implementation-context.md",
+      "review-codex": "review-codex.md",
+      "review-claude": "review-claude.md",
+      "final-synthesis": "final-synthesis.md"
+    }
+  },
+  "workflow": {
+    "stageOrder": [
+      "plan",
+      "plan-review",
+      "implementation-context",
+      "review-codex",
+      "review-claude",
+      "final-synthesis"
+    ]
+  },
+  "roles": {
+    "planner": "anthropic/claude-opus-4-6",
+    "plan_reviewer": "openai/gpt-5.3-codex",
+    "implementer": "openai/gpt-5.3-codex",
+    "consultant_primary": "anthropic/claude-opus-4-6",
+    "consultant_secondary": "anthropic/claude-sonnet-4-6",
+    "reviewer_codex": "openai/gpt-5.3-codex",
+    "reviewer_claude": "anthropic/claude-opus-4-6",
+    "synthesizer": "openai/gpt-5.3-codex"
+  }
+}
