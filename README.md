@@ -65,12 +65,14 @@ For package-based installation, publish this repository to npm and add it to the
   "$schema": "https://opencode.ai/config.json",
   "plugin": [
     "oh-my-opencode@latest",
-    "opencode-akane@0.1.0"
+    "opencode-akane@latest"
   ]
 }
 ```
 
 Akane still reads its runtime config from `~/.config/opencode/akane.json`.
+If that file does not exist yet, the plugin now bootstraps it automatically on first load with the default config.
+You only need to edit it when you want to override the default role or artifact settings.
 
 ## Publish flow
 

@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import os from "node:os";
 import path from "node:path";
 import {
@@ -45,12 +45,46 @@ export function expandHome(inputPath: string): string {
   return inputPath;
 }
 
-export function defaultAkaneConfig(): AkaneConfig {
+function formatAkaneConfig(config: AkaneConfig): string {
+  return `${JSON.stringify(config, null, 2)}\n`;
+}
+
+async function readAkaneConfigFile(
+  filePath: string,
+): Promise<DeepPartial<AkaneConfig>> {
+  const raw = await readFile(filePath, "utf8");
+  return parseJsonFile<DeepPartial<AkaneConfig>>(raw, filePath);
+}
+
+async function bootstrapAkaneConfigFile(
+  filePath: string,
+  config: AkaneConfig,
+): Promise<boolean> {
+  await mkdir(path.dirname(filePath), { recursive: true });
+
+  try {
+    await writeFile(filePath, formatAkaneConfig(config), {
+      encoding: "utf8",
+      flag: "wx",
+    });
+    return true;
+  } catch (error) {
+    if ((error as NodeJS.ErrnoException).code === "EEXIST") {
+      return false;
+    }
+
+    throw error;
+  }
+}
+
+export function defaultAkaneConfig(
+  configPath = DEFAULT_GLOBAL_CONFIG_PATH,
+): AkaneConfig {
   return {
     version: 1,
     serviceName: AKANE_SERVICE_NAME,
     pluginOutputPath: DEFAULT_PLUGIN_OUTPUT_PATH,
-    globalConfigPath: DEFAULT_GLOBAL_CONFIG_PATH,
+    globalConfigPath: configPath,
     artifacts: {
       dir: DEFAULT_ARTIFACT_DIR,
       stateFile: DEFAULT_STATE_FILE,
@@ -181,11 +215,10 @@ export async function loadAkaneConfig(
   configPath = process.env.AKANE_CONFIG_PATH ?? DEFAULT_GLOBAL_CONFIG_PATH,
 ): Promise<LoadedAkaneConfig> {
   const resolvedPath = expandHome(configPath);
-  const defaults = defaultAkaneConfig();
+  const defaults = defaultAkaneConfig(configPath);
 
   try {
-    const raw = await readFile(resolvedPath, "utf8");
-    const parsed = parseJsonFile<DeepPartial<AkaneConfig>>(raw, resolvedPath);
+    const parsed = await readAkaneConfigFile(resolvedPath);
     return {
       path: resolvedPath,
       exists: true,
@@ -193,11 +226,37 @@ export async function loadAkaneConfig(
     };
   } catch (error) {
     if ((error as NodeJS.ErrnoException).code === "ENOENT") {
-      return {
-        path: resolvedPath,
-        exists: false,
-        config: defaults,
-      };
+      try {
+        const created = await bootstrapAkaneConfigFile(resolvedPath, defaults);
+        if (!created) {
+          const parsed = await readAkaneConfigFile(resolvedPath);
+          return {
+            path: resolvedPath,
+            exists: true,
+            config: mergeAkaneConfig(defaults, parsed),
+          };
+        }
+
+        return {
+          path: resolvedPath,
+          exists: true,
+          config: defaults,
+        };
+      } catch (bootstrapError) {
+        const message =
+          bootstrapError instanceof Error
+            ? bootstrapError.message
+            : "unknown bootstrap error";
+        console.warn(
+          `Akane: failed to auto-create config at ${resolvedPath}: ${message}`,
+        );
+
+        return {
+          path: resolvedPath,
+          exists: false,
+          config: defaults,
+        };
+      }
     }
 
     throw error;
