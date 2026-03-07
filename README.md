@@ -19,6 +19,13 @@ This repository now contains the first MVP skeleton for the plugin:
 - `src/artifacts.ts`: `.opencode/akane/` artifact and `state.json` helpers
 - `src/tools/akane-init.ts`: initializes the per-project workspace
 - `src/tools/akane-stage-artifact.ts`: writes stage artifacts deterministically
+- `src/workflow.ts`: child-session orchestration, stage prompts, and artifact handoff
+- `src/tools/akane-plan.ts`: planner stage
+- `src/tools/akane-plan-review.ts`: plan review stage
+- `src/tools/akane-implement.ts`: implementation stage
+- `src/tools/akane-review.ts`: review stage
+- `src/tools/akane-synthesize.ts`: final synthesis stage
+- `src/tools/akane-run.ts`: end-to-end MVP workflow runner
 - `examples/akane.example.json`: example global Akane config
 
 ## Local development
@@ -30,6 +37,24 @@ bun run build
 ```
 
 The build emits `dist/index.js` as the package entrypoint and also keeps `dist/akane.js` for local file-based linking.
+
+## Available tools
+
+Once the plugin is loaded in OpenCode, the current MVP exposes these tools:
+
+- `akane_init`
+- `akane_stage_artifact`
+- `akane_plan`
+- `akane_plan_review`
+- `akane_implement`
+- `akane_review`
+- `akane_synthesize`
+- `akane_run`
+
+Notes:
+
+- `akane_init` is optional because the stage tools lazily create `.opencode/akane/` on first use
+- `akane_run` is the main MVP entrypoint when you want to test the full workflow
 
 ## Package install
 

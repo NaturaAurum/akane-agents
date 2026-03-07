@@ -7,6 +7,7 @@ import {
 import type {
   AkaneConfig,
   AkaneStageId,
+  AkaneStageState,
   AkaneState,
   ArtifactWriteMode,
 } from "./types.js";
@@ -181,6 +182,7 @@ export async function writeStageArtifact(input: {
   stage: AkaneStageId;
   content: string;
   mode: ArtifactWriteMode;
+  details?: Partial<Omit<AkaneStageState, "path" | "status" | "updatedAt">>;
 }): Promise<{
   artifactDir: string;
   artifactPath: string;
@@ -219,6 +221,7 @@ export async function writeStageArtifact(input: {
     path: artifactPath,
     status: "completed",
     updatedAt: timestamp,
+    ...input.details,
   };
 
   await writeStateFile(ensured.statePath, state);

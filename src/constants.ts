@@ -13,6 +13,17 @@ export const AKANE_STAGE_IDS = [
   "final-synthesis",
 ] as const;
 
+export const AKANE_TOOL_IDS = [
+  "akane_init",
+  "akane_stage_artifact",
+  "akane_plan",
+  "akane_plan_review",
+  "akane_implement",
+  "akane_review",
+  "akane_synthesize",
+  "akane_run",
+] as const;
+
 export const AKANE_ROLE_IDS = [
   "planner",
   "plan_reviewer",

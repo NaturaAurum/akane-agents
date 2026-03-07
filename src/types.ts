@@ -37,6 +37,11 @@ export interface AkaneStageState {
   path: string;
   status: "pending" | "initialized" | "completed";
   updatedAt: string | null;
+  role?: AkaneRoleId;
+  model?: string;
+  sessionID?: string;
+  messageID?: string;
+  title?: string;
 }
 
 export interface AkaneState {
