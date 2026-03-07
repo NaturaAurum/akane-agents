@@ -2,7 +2,7 @@
   "name": "opencode-akane",
   "version": "0.1.0",
   "description": "Akane orchestration plugin for OpenCode",
-  "license": "UNLICENSED",
+  "license": "MIT",
   "type": "module",
   "keywords": [
     "opencode",

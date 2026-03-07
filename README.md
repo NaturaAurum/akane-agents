@@ -67,7 +67,7 @@ bun run pack:check
 Notes:
 
 - The current package name assumption is `opencode-akane`
-- The current license is `UNLICENSED`; set an explicit open-source or commercial license before a public release if needed
+- The current license is `MIT`
 - If you later switch to a scoped package name, publish with `npm publish --access public`
 
 ## Automated publishing
