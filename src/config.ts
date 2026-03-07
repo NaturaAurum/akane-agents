@@ -3,10 +3,12 @@ import os from "node:os";
 import path from "node:path";
 import {
   AKANE_SERVICE_NAME,
+  AKANE_ROLE_IDS,
   AKANE_STAGE_IDS,
   DEFAULT_ARTIFACT_DIR,
   DEFAULT_GLOBAL_CONFIG_PATH,
   DEFAULT_PLUGIN_OUTPUT_PATH,
+  DEFAULT_ROLE_AGENTS,
   DEFAULT_ROLE_MODELS,
   DEFAULT_STAGE_FILES,
   DEFAULT_STAGE_ORDER,
@@ -14,6 +16,7 @@ import {
 } from "./constants.js";
 import type {
   AkaneConfig,
+  AkaneRoleAgents,
   AkaneRoleId,
   AkaneRoles,
   AkaneStageFiles,
@@ -93,6 +96,7 @@ export function defaultAkaneConfig(
     workflow: {
       stageOrder: [...DEFAULT_STAGE_ORDER],
     },
+    roleAgents: { ...DEFAULT_ROLE_AGENTS },
     roles: { ...DEFAULT_ROLE_MODELS },
   };
 }
@@ -117,6 +121,25 @@ function normalizeRoles(
 
   const next = { ...fallback };
   for (const role of Object.keys(fallback) as AkaneRoleId[]) {
+    const candidate = input[role];
+    if (typeof candidate === "string" && candidate.trim()) {
+      next[role] = candidate.trim();
+    }
+  }
+
+  return next;
+}
+
+function normalizeRoleAgents(
+  input: unknown,
+  fallback: AkaneRoleAgents,
+): AkaneRoleAgents {
+  if (!isRecord(input)) {
+    return { ...fallback };
+  }
+
+  const next = { ...fallback };
+  for (const role of AKANE_ROLE_IDS) {
     const candidate = input[role];
     if (typeof candidate === "string" && candidate.trim()) {
       next[role] = candidate.trim();
@@ -207,6 +230,7 @@ export function mergeAkaneConfig(
         base.workflow.stageOrder,
       ),
     },
+    roleAgents: normalizeRoleAgents(overrides.roleAgents, base.roleAgents),
     roles: normalizeRoles(overrides.roles, base.roles),
   };
 }

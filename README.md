@@ -73,6 +73,22 @@ For package-based installation, publish this repository to npm and add it to the
 Akane still reads its runtime config from `~/.config/opencode/akane.json`.
 If that file does not exist yet, the plugin now bootstraps it automatically on first load with the default config.
 You only need to edit it when you want to override the default role or artifact settings.
+When `oh-my-opencode` is installed, Akane now prefers OMO agents such as `prometheus`, `atlas`, `momus`, `oracle`, and `sisyphus`, then falls back to direct model routing when those agents are unavailable.
+
+`akane.json` supports both model routing and agent routing:
+
+```json
+{
+  "roleAgents": {
+    "planner": "prometheus",
+    "plan_reviewer": "hephaestus",
+    "implementer": "atlas",
+    "reviewer_codex": "momus",
+    "reviewer_claude": "oracle",
+    "synthesizer": "sisyphus"
+  }
+}
+```
 
 ## Publish flow
 

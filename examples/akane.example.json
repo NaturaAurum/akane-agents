@@ -25,6 +25,16 @@
       "final-synthesis"
     ]
   },
+  "roleAgents": {
+    "planner": "prometheus",
+    "plan_reviewer": "metis",
+    "implementer": "atlas",
+    "consultant_primary": "oracle",
+    "consultant_secondary": "librarian",
+    "reviewer_codex": "momus",
+    "reviewer_claude": "oracle",
+    "synthesizer": "sisyphus"
+  },
   "roles": {
     "planner": "anthropic/claude-opus-4-6",
     "plan_reviewer": "openai/gpt-5.4",

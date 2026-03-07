@@ -12,6 +12,7 @@ import {
   AKANE_SERVICE_NAME,
   AKANE_STAGE_IDS,
   AKANE_TOOL_IDS,
+  DEFAULT_ROLE_AGENTS,
 } from "./constants.js";
 import {
   ensureArtifactLayout,
@@ -20,6 +21,7 @@ import {
   writeStageArtifact,
 } from "./artifacts.js";
 import type {
+  AkaneConfig,
   AkaneRoleId,
   AkaneStageId,
   LoadedAkaneConfig,
@@ -36,13 +38,27 @@ const STAGE_ROLE_MAP: Record<AkaneStageId, AkaneRoleId> = {
   "final-synthesis": "synthesizer",
 };
 
-const DEFAULT_ROLE_AGENTS: Partial<Record<AkaneRoleId, string>> = {
-  planner: "plan",
-  plan_reviewer: "general",
-  implementer: "build",
-  reviewer_codex: "general",
-  reviewer_claude: "general",
-  synthesizer: "general",
+const DEFAULT_ROLE_AGENT_CANDIDATES: Record<AkaneRoleId, string[]> = {
+  planner: ["prometheus", "Prometheus (Plan Builder)", "plan"],
+  plan_reviewer: [
+    "metis",
+    "Metis (Plan Consultant)",
+    "hephaestus",
+    "Hephaestus (Deep Agent)",
+    "general",
+  ],
+  implementer: ["atlas", "Atlas (Plan Executor)", "build"],
+  consultant_primary: ["oracle", "general"],
+  consultant_secondary: ["librarian", "explore", "general"],
+  reviewer_codex: [
+    "momus",
+    "Momus (Plan Critic)",
+    "hephaestus",
+    "Hephaestus (Deep Agent)",
+    "general",
+  ],
+  reviewer_claude: ["oracle", "general"],
+  synthesizer: ["sisyphus", "Sisyphus (Ultraworker)", "general"],
 };
 
 const IMPLEMENT_TIMEOUT_MS = 15 * 60 * 1000;
@@ -112,6 +128,17 @@ function stageTitle(stage: AkaneStageId): string {
     .split("-")
     .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
     .join(" ");
+}
+
+function normalizeAgentName(input: string): string {
+  return input.trim().toLowerCase();
+}
+
+function agentNameAliases(input: string): string[] {
+  const normalized = normalizeAgentName(input);
+  const base = normalized.replace(/\s*\([^)]*\)\s*$/, "").trim();
+
+  return Array.from(new Set([normalized, base].filter(Boolean)));
 }
 
 function parseModelRef(modelRef: string): { providerID: string; modelID: string } {
@@ -193,7 +220,7 @@ function makeToolRestrictions(allowWorkspaceMutation: boolean): Record<string, b
   ) as Record<string, boolean>;
 
   if (!allowWorkspaceMutation) {
-    for (const toolID of ["bash", "edit", "patch", "write", "task", "question"]) {
+    for (const toolID of ["bash", "edit", "patch", "write"]) {
       restrictions[toolID] = false;
     }
   }
@@ -205,18 +232,35 @@ async function resolveAgentName(
   client: PluginInput["client"],
   directory: string,
   role: AkaneRoleId,
+  config: AkaneConfig,
 ): Promise<string | undefined> {
-  const preferred = DEFAULT_ROLE_AGENTS[role];
-  if (!preferred) {
-    return undefined;
-  }
+  const candidates = [
+    config.roleAgents[role],
+    ...DEFAULT_ROLE_AGENT_CANDIDATES[role],
+    DEFAULT_ROLE_AGENTS[role],
+  ]
+    .filter((candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0)
+    .filter((candidate, index, all) =>
+      all.findIndex((value) => normalizeAgentName(value) === normalizeAgentName(candidate)) === index,
+    );
 
   try {
     const result = await client.app.agents({
       query: { directory },
     });
     const agents = requireResultData(result, "agent list");
-    return agents.some((agent) => agent.name === preferred) ? preferred : undefined;
+
+    for (const candidate of candidates) {
+      const candidateAliases = agentNameAliases(candidate);
+      const matched = agents.find((agent) =>
+        agentNameAliases(agent.name).some((alias) => candidateAliases.includes(alias)),
+      );
+      if (matched) {
+        return matched.name;
+      }
+    }
+
+    return undefined;
   } catch {
     return undefined;
   }
@@ -342,6 +386,7 @@ function renderSection(title: string, body: string): string {
 function renderStageDocument(input: {
   stage: AkaneStageId;
   role: AkaneRoleId;
+  agent?: string;
   model: string;
   sessionID: string;
   messageID: string;
@@ -354,6 +399,7 @@ function renderStageDocument(input: {
     "",
     `- Service: ${AKANE_SERVICE_NAME}`,
     `- Role: ${input.role}`,
+    ...(input.agent ? [`- Agent: ${input.agent}`] : []),
     `- Model: ${input.model}`,
     `- Session ID: ${input.sessionID}`,
     `- Message ID: ${input.messageID}`,
@@ -428,9 +474,14 @@ function buildArtifactBlock(
 
 async function runStageSession(input: RunStageRequest): Promise<RunStageResult> {
   const role = STAGE_ROLE_MAP[input.stage];
-  const model = input.configInfo.config.roles[role];
-  const modelRef = parseModelRef(model);
-  const agent = await resolveAgentName(input.pluginInput.client, input.projectRoot, role);
+  const configuredModel = input.configInfo.config.roles[role];
+  const modelRef = parseModelRef(configuredModel);
+  const agent = await resolveAgentName(
+    input.pluginInput.client,
+    input.projectRoot,
+    role,
+    input.configInfo.config,
+  );
 
   const session = await createStageSession({
     client: input.pluginInput.client,
@@ -445,7 +496,7 @@ async function runStageSession(input: RunStageRequest): Promise<RunStageResult> 
     signal: input.toolContext.abort,
     body: {
       ...(agent ? { agent } : {}),
-      model: modelRef,
+      ...(agent ? {} : { model: modelRef }),
       system: input.system,
       tools: makeToolRestrictions(input.allowWorkspaceMutation),
       parts: [
@@ -484,7 +535,10 @@ async function runStageSession(input: RunStageRequest): Promise<RunStageResult> 
   return {
     stage: input.stage,
     role,
-    model,
+    model:
+      latestAssistant.info.providerID && latestAssistant.info.modelID
+        ? `${latestAssistant.info.providerID}/${latestAssistant.info.modelID}`
+        : configuredModel,
     agent,
     sessionID: session.id,
     messageID: latestAssistant.info.id,
@@ -589,6 +643,7 @@ export async function executePlanStage(
   const content = renderStageDocument({
     stage: result.stage,
     role: result.role,
+    agent: result.agent,
     model: result.model,
     sessionID: result.sessionID,
     messageID: result.messageID,
@@ -605,6 +660,7 @@ export async function executePlanStage(
     mode: "replace",
     details: {
       role: result.role,
+      agent: result.agent,
       model: result.model,
       sessionID: result.sessionID,
       messageID: result.messageID,
@@ -649,6 +705,7 @@ export async function executePlanReviewStage(
   const content = renderStageDocument({
     stage: result.stage,
     role: result.role,
+    agent: result.agent,
     model: result.model,
     sessionID: result.sessionID,
     messageID: result.messageID,
@@ -665,6 +722,7 @@ export async function executePlanReviewStage(
     mode: "replace",
     details: {
       role: result.role,
+      agent: result.agent,
       model: result.model,
       sessionID: result.sessionID,
       messageID: result.messageID,
@@ -746,6 +804,7 @@ export async function executeImplementStage(
   const content = renderStageDocument({
     stage: result.stage,
     role: result.role,
+    agent: result.agent,
     model: result.model,
     sessionID: result.sessionID,
     messageID: result.messageID,
@@ -777,6 +836,7 @@ export async function executeImplementStage(
     mode: "replace",
     details: {
       role: result.role,
+      agent: result.agent,
       model: result.model,
       sessionID: result.sessionID,
       messageID: result.messageID,
@@ -848,6 +908,7 @@ async function executeReviewerStage(
   const content = renderStageDocument({
     stage: result.stage,
     role: result.role,
+    agent: result.agent,
     model: result.model,
     sessionID: result.sessionID,
     messageID: result.messageID,
@@ -864,6 +925,7 @@ async function executeReviewerStage(
     mode: "replace",
     details: {
       role: result.role,
+      agent: result.agent,
       model: result.model,
       sessionID: result.sessionID,
       messageID: result.messageID,
@@ -975,6 +1037,7 @@ export async function executeSynthesizeStage(
   const content = renderStageDocument({
     stage: result.stage,
     role: result.role,
+    agent: result.agent,
     model: result.model,
     sessionID: result.sessionID,
     messageID: result.messageID,
@@ -991,6 +1054,7 @@ export async function executeSynthesizeStage(
     mode: "replace",
     details: {
       role: result.role,
+      agent: result.agent,
       model: result.model,
       sessionID: result.sessionID,
       messageID: result.messageID,

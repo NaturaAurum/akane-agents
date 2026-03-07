@@ -99,6 +99,7 @@ export function createInitialState(input: {
     activeStage: null,
     stageOrder: [...input.config.workflow.stageOrder],
     stages,
+    roleAgents: { ...input.config.roleAgents },
     roles: { ...input.config.roles },
   };
 }
@@ -170,6 +171,23 @@ export async function ensureArtifactLayout(input: {
 
     await writeStateFile(statePath, state);
     createdFiles.push(statePath);
+  } else {
+    let updated = false;
+
+    if (!state.roleAgents) {
+      state.roleAgents = { ...input.config.roleAgents };
+      updated = true;
+    }
+
+    if (!state.roles) {
+      state.roles = { ...input.config.roles };
+      updated = true;
+    }
+
+    if (updated) {
+      state.updatedAt = nowIso();
+      await writeStateFile(statePath, state);
+    }
   }
 
   return { artifactDir, statePath, state, createdFiles };

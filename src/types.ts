@@ -9,6 +9,7 @@ export type AkaneStageId = (typeof AKANE_STAGE_IDS)[number];
 export type AkaneRoleId = (typeof AKANE_ROLE_IDS)[number];
 
 export type AkaneRoles = Record<AkaneRoleId, string>;
+export type AkaneRoleAgents = Record<AkaneRoleId, string>;
 export type AkaneStageFiles = Record<AkaneStageId, string>;
 
 export interface AkaneConfig {
@@ -24,6 +25,7 @@ export interface AkaneConfig {
   workflow: {
     stageOrder: AkaneStageId[];
   };
+  roleAgents: AkaneRoleAgents;
   roles: AkaneRoles;
 }
 
@@ -38,6 +40,7 @@ export interface AkaneStageState {
   status: "pending" | "initialized" | "completed";
   updatedAt: string | null;
   role?: AkaneRoleId;
+  agent?: string;
   model?: string;
   sessionID?: string;
   messageID?: string;
@@ -55,6 +58,7 @@ export interface AkaneState {
   activeStage: AkaneStageId | null;
   stageOrder: AkaneStageId[];
   stages: Record<AkaneStageId, AkaneStageState>;
+  roleAgents: AkaneRoleAgents;
   roles: AkaneRoles;
 }
 

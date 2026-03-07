@@ -46,6 +46,17 @@ export const DEFAULT_ROLE_MODELS = {
   synthesizer: "openai/gpt-5.4",
 } as const;
 
+export const DEFAULT_ROLE_AGENTS = {
+  planner: "prometheus",
+  plan_reviewer: "metis",
+  implementer: "atlas",
+  consultant_primary: "oracle",
+  consultant_secondary: "librarian",
+  reviewer_codex: "momus",
+  reviewer_claude: "oracle",
+  synthesizer: "sisyphus",
+} as const;
+
 export const DEFAULT_STAGE_FILES = {
   plan: "plan.md",
   "plan-review": "plan-review.md",
