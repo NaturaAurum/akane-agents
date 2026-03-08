@@ -61,8 +61,10 @@ const DEFAULT_ROLE_AGENT_CANDIDATES: Record<AkaneRoleId, string[]> = {
   synthesizer: ["sisyphus", "Sisyphus (Ultraworker)", "general"],
 };
 
-const IMPLEMENT_TIMEOUT_MS = 15 * 60 * 1000;
-const DEFAULT_TIMEOUT_MS = 5 * 60 * 1000;
+const PLAN_TIMEOUT_MS = 12 * 60 * 1000;
+const PLAN_REVIEW_TIMEOUT_MS = 8 * 60 * 1000;
+const IMPLEMENT_TIMEOUT_MS = 20 * 60 * 1000;
+const DEFAULT_TIMEOUT_MS = 8 * 60 * 1000;
 const POLL_INTERVAL_MS = 800;
 const STABILITY_POLLS_REQUIRED = 2;
 
@@ -642,6 +644,7 @@ export async function executePlanStage(
       .filter(Boolean)
       .join("\n"),
     allowWorkspaceMutation: false,
+    timeoutMs: PLAN_TIMEOUT_MS,
   });
 
   const content = renderStageDocument({
@@ -704,6 +707,7 @@ export async function executePlanReviewStage(
       .filter(Boolean)
       .join("\n"),
     allowWorkspaceMutation: false,
+    timeoutMs: PLAN_REVIEW_TIMEOUT_MS,
   });
 
   const content = renderStageDocument({
