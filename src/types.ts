@@ -7,6 +7,7 @@ import type {
 
 export type AkaneStageId = (typeof AKANE_STAGE_IDS)[number];
 export type AkaneRoleId = (typeof AKANE_ROLE_IDS)[number];
+export type AkaneAgentMode = "models" | "native" | "omo";
 
 export type AkaneRoles = Record<AkaneRoleId, string>;
 export type AkaneRoleAgents = Record<AkaneRoleId, string>;
@@ -25,6 +26,7 @@ export interface AkaneConfig {
   workflow: {
     stageOrder: AkaneStageId[];
     preferAgents: boolean;
+    agentMode: AkaneAgentMode;
   };
   roleAgents: AkaneRoleAgents;
   roles: AkaneRoles;

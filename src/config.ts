@@ -15,6 +15,7 @@ import {
   DEFAULT_STATE_FILE,
 } from "./constants.js";
 import type {
+  AkaneAgentMode,
   AkaneConfig,
   AkaneRoleAgents,
   AkaneRoleId,
@@ -96,10 +97,20 @@ export function defaultAkaneConfig(
     workflow: {
       stageOrder: [...DEFAULT_STAGE_ORDER],
       preferAgents: false,
+      agentMode: "models",
     },
     roleAgents: { ...DEFAULT_ROLE_AGENTS },
     roles: { ...DEFAULT_ROLE_MODELS },
   };
+}
+
+function normalizeAgentMode(
+  input: unknown,
+  fallback: AkaneAgentMode,
+): AkaneAgentMode {
+  return input === "models" || input === "native" || input === "omo"
+    ? input
+    : fallback;
 }
 
 function parseJsonFile<T>(content: string, filePath: string): T {
@@ -190,6 +201,16 @@ export function mergeAkaneConfig(
   base: AkaneConfig,
   overrides: DeepPartial<AkaneConfig>,
 ): AkaneConfig {
+  const workflowOverrides = isRecord(overrides.workflow) ? overrides.workflow : undefined;
+  const preferAgents =
+    typeof workflowOverrides?.preferAgents === "boolean"
+      ? workflowOverrides.preferAgents
+      : base.workflow.preferAgents;
+  const derivedAgentMode =
+    typeof workflowOverrides?.preferAgents === "boolean"
+      ? (preferAgents ? "native" : "models")
+      : base.workflow.agentMode;
+
   return {
     version:
       typeof overrides.version === "number" ? overrides.version : base.version,
@@ -227,14 +248,14 @@ export function mergeAkaneConfig(
     },
     workflow: {
       stageOrder: normalizeStageOrder(
-        isRecord(overrides.workflow) ? overrides.workflow.stageOrder : undefined,
+        workflowOverrides?.stageOrder,
         base.workflow.stageOrder,
       ),
-      preferAgents:
-        isRecord(overrides.workflow) &&
-        typeof overrides.workflow.preferAgents === "boolean"
-          ? overrides.workflow.preferAgents
-          : base.workflow.preferAgents,
+      preferAgents,
+      agentMode: normalizeAgentMode(
+        workflowOverrides?.agentMode,
+        derivedAgentMode,
+      ),
     },
     roleAgents: normalizeRoleAgents(overrides.roleAgents, base.roleAgents),
     roles: normalizeRoles(overrides.roles, base.roles),

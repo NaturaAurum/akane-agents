@@ -17,6 +17,7 @@
   },
   "workflow": {
     "preferAgents": false,
+    "agentMode": "models",
     "stageOrder": [
       "plan",
       "plan-review",

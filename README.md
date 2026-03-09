@@ -74,14 +74,20 @@ Akane still reads its runtime config from `~/.config/opencode/akane.json`.
 If that file does not exist yet, the plugin now bootstraps it automatically on first load with the default config.
 You only need to edit it when you want to override the default role or artifact settings.
 By default, Akane stays model-first and does not depend on `oh-my-opencode`.
-If you want to opt into OMO agents, set `workflow.preferAgents` to `true`.
+`workflow.agentMode` is the explicit routing switch:
+
+- `models`: Akane routes by model only
+- `native`: Akane uses OpenCode native/custom agents like `plan`, `build`, and `general`
+- `omo`: Akane prefers OMO agent names like `prometheus`, `atlas`, and `momus`
+
+`workflow.preferAgents` is still supported for backward compatibility, but `workflow.agentMode` should be preferred for new configs.
 
 `akane.json` supports both model routing and agent routing:
 
 ```json
 {
   "workflow": {
-    "preferAgents": true
+    "agentMode": "omo"
   },
   "roleAgents": {
     "planner": "prometheus",
@@ -90,6 +96,24 @@ If you want to opt into OMO agents, set `workflow.preferAgents` to `true`.
     "reviewer_codex": "momus",
     "reviewer_claude": "oracle",
     "synthesizer": "sisyphus"
+  }
+}
+```
+
+For native OpenCode agents, the config is typically closer to:
+
+```json
+{
+  "workflow": {
+    "agentMode": "native"
+  },
+  "roleAgents": {
+    "planner": "plan",
+    "plan_reviewer": "general",
+    "implementer": "build",
+    "reviewer_codex": "general",
+    "reviewer_claude": "akane-review-claude",
+    "synthesizer": "general"
   }
 }
 ```

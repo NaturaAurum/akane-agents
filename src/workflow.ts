@@ -38,27 +38,37 @@ const STAGE_ROLE_MAP: Record<AkaneStageId, AkaneRoleId> = {
   "final-synthesis": "synthesizer",
 };
 
-const DEFAULT_ROLE_AGENT_CANDIDATES: Record<AkaneRoleId, string[]> = {
-  planner: ["prometheus", "Prometheus (Plan Builder)", "plan"],
-  plan_reviewer: [
-    "metis",
-    "Metis (Plan Consultant)",
-    "hephaestus",
-    "Hephaestus (Deep Agent)",
-    "general",
-  ],
-  implementer: ["atlas", "Atlas (Plan Executor)", "build"],
-  consultant_primary: ["oracle", "general"],
-  consultant_secondary: ["librarian", "explore", "general"],
-  reviewer_codex: [
-    "momus",
-    "Momus (Plan Critic)",
-    "hephaestus",
-    "Hephaestus (Deep Agent)",
-    "general",
-  ],
-  reviewer_claude: ["oracle", "general"],
-  synthesizer: ["sisyphus", "Sisyphus (Ultraworker)", "general"],
+const OMO_ROLE_AGENT_CANDIDATES: Record<AkaneRoleId, string[]> = {
+  planner: ["prometheus", "Prometheus (Plan Builder)"],
+  plan_reviewer: ["metis", "Metis (Plan Consultant)", "hephaestus", "Hephaestus (Deep Agent)"],
+  implementer: ["atlas", "Atlas (Plan Executor)"],
+  consultant_primary: ["oracle"],
+  consultant_secondary: ["librarian"],
+  reviewer_codex: ["momus", "Momus (Plan Critic)", "hephaestus", "Hephaestus (Deep Agent)"],
+  reviewer_claude: ["oracle"],
+  synthesizer: ["sisyphus", "Sisyphus (Ultraworker)"],
+};
+
+const NATIVE_ROLE_AGENT_CANDIDATES: Record<AkaneRoleId, string[]> = {
+  planner: ["plan"],
+  plan_reviewer: ["general"],
+  implementer: ["build"],
+  consultant_primary: ["general"],
+  consultant_secondary: ["explore", "general"],
+  reviewer_codex: ["general"],
+  reviewer_claude: ["general"],
+  synthesizer: ["general"],
+};
+
+const LEGACY_ROLE_AGENT_CANDIDATES: Record<AkaneRoleId, string[]> = {
+  planner: [...OMO_ROLE_AGENT_CANDIDATES.planner, ...NATIVE_ROLE_AGENT_CANDIDATES.planner],
+  plan_reviewer: [...OMO_ROLE_AGENT_CANDIDATES.plan_reviewer, ...NATIVE_ROLE_AGENT_CANDIDATES.plan_reviewer],
+  implementer: [...OMO_ROLE_AGENT_CANDIDATES.implementer, ...NATIVE_ROLE_AGENT_CANDIDATES.implementer],
+  consultant_primary: [...OMO_ROLE_AGENT_CANDIDATES.consultant_primary, ...NATIVE_ROLE_AGENT_CANDIDATES.consultant_primary],
+  consultant_secondary: [...OMO_ROLE_AGENT_CANDIDATES.consultant_secondary, ...NATIVE_ROLE_AGENT_CANDIDATES.consultant_secondary],
+  reviewer_codex: [...OMO_ROLE_AGENT_CANDIDATES.reviewer_codex, ...NATIVE_ROLE_AGENT_CANDIDATES.reviewer_codex],
+  reviewer_claude: [...OMO_ROLE_AGENT_CANDIDATES.reviewer_claude, ...NATIVE_ROLE_AGENT_CANDIDATES.reviewer_claude],
+  synthesizer: [...OMO_ROLE_AGENT_CANDIDATES.synthesizer, ...NATIVE_ROLE_AGENT_CANDIDATES.synthesizer],
 };
 
 const PLAN_TIMEOUT_MS = 12 * 60 * 1000;
@@ -230,19 +240,35 @@ function makeToolRestrictions(allowWorkspaceMutation: boolean): Record<string, b
   return restrictions;
 }
 
+function resolveAgentMode(config: AkaneConfig): "models" | "native" | "omo" | "legacy-agents" {
+  if (config.workflow.agentMode === "models" || config.workflow.agentMode === "native" || config.workflow.agentMode === "omo") {
+    return config.workflow.agentMode;
+  }
+
+  return config.workflow.preferAgents ? "legacy-agents" : "models";
+}
+
 async function resolveAgentName(
   client: PluginInput["client"],
   directory: string,
   role: AkaneRoleId,
   config: AkaneConfig,
 ): Promise<string | undefined> {
-  if (!config.workflow.preferAgents) {
+  const agentMode = resolveAgentMode(config);
+  if (agentMode === "models") {
     return undefined;
   }
 
+  const defaultCandidates =
+    agentMode === "native"
+      ? NATIVE_ROLE_AGENT_CANDIDATES[role]
+      : agentMode === "omo"
+        ? OMO_ROLE_AGENT_CANDIDATES[role]
+        : LEGACY_ROLE_AGENT_CANDIDATES[role];
+
   const candidates = [
     config.roleAgents[role],
-    ...DEFAULT_ROLE_AGENT_CANDIDATES[role],
+    ...defaultCandidates,
     DEFAULT_ROLE_AGENTS[role],
   ]
     .filter((candidate): candidate is string => typeof candidate === "string" && candidate.trim().length > 0)
