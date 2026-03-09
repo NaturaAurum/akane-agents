@@ -22,6 +22,7 @@ import type {
   AkaneRoles,
   AkaneStageFiles,
   AkaneStageId,
+  AkaneStageTimeoutMinutes,
   LoadedAkaneConfig,
 } from "./types.js";
 
@@ -98,6 +99,14 @@ export function defaultAkaneConfig(
       stageOrder: [...DEFAULT_STAGE_ORDER],
       preferAgents: false,
       agentMode: "models",
+      stageTimeoutMinutes: {
+        plan: 180,
+        "plan-review": 180,
+        "implementation-context": 360,
+        "review-codex": 180,
+        "review-claude": 180,
+        "final-synthesis": 180,
+      },
     },
     roleAgents: { ...DEFAULT_ROLE_AGENTS },
     roles: { ...DEFAULT_ROLE_MODELS },
@@ -197,6 +206,25 @@ function normalizeStageOrder(
   return values.length === AKANE_STAGE_IDS.length ? values : [...fallback];
 }
 
+function normalizeStageTimeoutMinutes(
+  input: unknown,
+  fallback: AkaneStageTimeoutMinutes,
+): AkaneStageTimeoutMinutes {
+  if (!isRecord(input)) {
+    return { ...fallback };
+  }
+
+  const next = { ...fallback };
+  for (const stage of AKANE_STAGE_IDS) {
+    const candidate = input[stage];
+    if (typeof candidate === "number" && Number.isFinite(candidate) && candidate >= 1) {
+      next[stage] = Math.floor(candidate);
+    }
+  }
+
+  return next;
+}
+
 export function mergeAkaneConfig(
   base: AkaneConfig,
   overrides: DeepPartial<AkaneConfig>,
@@ -255,6 +283,10 @@ export function mergeAkaneConfig(
       agentMode: normalizeAgentMode(
         workflowOverrides?.agentMode,
         derivedAgentMode,
+      ),
+      stageTimeoutMinutes: normalizeStageTimeoutMinutes(
+        workflowOverrides?.stageTimeoutMinutes,
+        base.workflow.stageTimeoutMinutes,
       ),
     },
     roleAgents: normalizeRoleAgents(overrides.roleAgents, base.roleAgents),

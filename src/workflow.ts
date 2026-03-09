@@ -71,10 +71,6 @@ const LEGACY_ROLE_AGENT_CANDIDATES: Record<AkaneRoleId, string[]> = {
   synthesizer: [...OMO_ROLE_AGENT_CANDIDATES.synthesizer, ...NATIVE_ROLE_AGENT_CANDIDATES.synthesizer],
 };
 
-const PLAN_TIMEOUT_MS = 12 * 60 * 1000;
-const PLAN_REVIEW_TIMEOUT_MS = 8 * 60 * 1000;
-const IMPLEMENT_TIMEOUT_MS = 20 * 60 * 1000;
-const DEFAULT_TIMEOUT_MS = 8 * 60 * 1000;
 const POLL_INTERVAL_MS = 800;
 const STABILITY_POLLS_REQUIRED = 2;
 
@@ -246,6 +242,14 @@ function resolveAgentMode(config: AkaneConfig): "models" | "native" | "omo" | "l
   }
 
   return config.workflow.preferAgents ? "legacy-agents" : "models";
+}
+
+function resolveStageTimeoutMs(
+  config: AkaneConfig,
+  stage: AkaneStageId,
+): number {
+  const minutes = config.workflow.stageTimeoutMinutes[stage];
+  return Math.max(1, minutes) * 60 * 1000;
 }
 
 async function resolveAgentName(
@@ -551,7 +555,7 @@ async function runStageSession(input: RunStageRequest): Promise<RunStageResult> 
     sessionID: session.id,
     directory: input.projectRoot,
     abort: input.toolContext.abort,
-    timeoutMs: input.timeoutMs ?? DEFAULT_TIMEOUT_MS,
+    timeoutMs: input.timeoutMs ?? resolveStageTimeoutMs(input.configInfo.config, input.stage),
   });
   const latestAssistant = findLatestAssistantMessage(messages);
 
@@ -670,7 +674,7 @@ export async function executePlanStage(
       .filter(Boolean)
       .join("\n"),
     allowWorkspaceMutation: false,
-    timeoutMs: PLAN_TIMEOUT_MS,
+    timeoutMs: resolveStageTimeoutMs(input.configInfo.config, "plan"),
   });
 
   const content = renderStageDocument({
@@ -733,7 +737,7 @@ export async function executePlanReviewStage(
       .filter(Boolean)
       .join("\n"),
     allowWorkspaceMutation: false,
-    timeoutMs: PLAN_REVIEW_TIMEOUT_MS,
+    timeoutMs: resolveStageTimeoutMs(input.configInfo.config, "plan-review"),
   });
 
   const content = renderStageDocument({
@@ -815,7 +819,7 @@ export async function executeImplementStage(
       .filter(Boolean)
       .join("\n"),
     allowWorkspaceMutation: true,
-    timeoutMs: IMPLEMENT_TIMEOUT_MS,
+    timeoutMs: resolveStageTimeoutMs(input.configInfo.config, "implementation-context"),
   });
 
   const diffResult = await input.pluginInput.client.session.diff({

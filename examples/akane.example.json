@@ -18,6 +18,14 @@
   "workflow": {
     "preferAgents": false,
     "agentMode": "models",
+    "stageTimeoutMinutes": {
+      "plan": 180,
+      "plan-review": 180,
+      "implementation-context": 360,
+      "review-codex": 180,
+      "review-claude": 180,
+      "final-synthesis": 180
+    },
     "stageOrder": [
       "plan",
       "plan-review",

@@ -81,13 +81,22 @@ By default, Akane stays model-first and does not depend on `oh-my-opencode`.
 - `omo`: Akane prefers OMO agent names like `prometheus`, `atlas`, and `momus`
 
 `workflow.preferAgents` is still supported for backward compatibility, but `workflow.agentMode` should be preferred for new configs.
+`workflow.stageTimeoutMinutes` controls the per-stage timeout budget and defaults to hour-scale values.
 
 `akane.json` supports both model routing and agent routing:
 
 ```json
 {
   "workflow": {
-    "agentMode": "omo"
+    "agentMode": "omo",
+    "stageTimeoutMinutes": {
+      "plan": 180,
+      "plan-review": 180,
+      "implementation-context": 360,
+      "review-codex": 180,
+      "review-claude": 180,
+      "final-synthesis": 180
+    }
   },
   "roleAgents": {
     "planner": "prometheus",
@@ -105,7 +114,15 @@ For native OpenCode agents, the config is typically closer to:
 ```json
 {
   "workflow": {
-    "agentMode": "native"
+    "agentMode": "native",
+    "stageTimeoutMinutes": {
+      "plan": 180,
+      "plan-review": 180,
+      "implementation-context": 360,
+      "review-codex": 180,
+      "review-claude": 180,
+      "final-synthesis": 180
+    }
   },
   "roleAgents": {
     "planner": "plan",

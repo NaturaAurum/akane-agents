@@ -12,6 +12,7 @@ export type AkaneAgentMode = "models" | "native" | "omo";
 export type AkaneRoles = Record<AkaneRoleId, string>;
 export type AkaneRoleAgents = Record<AkaneRoleId, string>;
 export type AkaneStageFiles = Record<AkaneStageId, string>;
+export type AkaneStageTimeoutMinutes = Record<AkaneStageId, number>;
 
 export interface AkaneConfig {
   version: number;
@@ -27,6 +28,7 @@ export interface AkaneConfig {
     stageOrder: AkaneStageId[];
     preferAgents: boolean;
     agentMode: AkaneAgentMode;
+    stageTimeoutMinutes: AkaneStageTimeoutMinutes;
   };
   roleAgents: AkaneRoleAgents;
   roles: AkaneRoles;
