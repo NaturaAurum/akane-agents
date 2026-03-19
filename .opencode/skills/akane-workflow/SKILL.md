@@ -3,6 +3,8 @@ name: akane-workflow
 description: Use this when the user wants to run or continue the Akane workflow, update .opencode/akane artifacts, or use the repo-local /akane-* commands.
 ---
 
+<!-- managed-by: opencode-akane -->
+
 # Akane Workflow
 
 ## What I do

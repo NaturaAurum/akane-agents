@@ -71,6 +71,8 @@ That gives you slash-command style entrypoints such as:
 - `/akane-run`
 
 The commands are thin wrappers that tell OpenCode to load the `akane-workflow` skill and then invoke the matching `akane_*` tool while reusing existing artifacts in `.opencode/akane/`.
+When the Akane plugin loads, it now bootstraps these managed command and skill files into the global OpenCode paths under `~/.config/opencode/commands/` and `~/.config/opencode/skills/akane-workflow/`.
+Existing files are only updated automatically when they are recognized as Akane-managed copies.
 
 ## Package install
 

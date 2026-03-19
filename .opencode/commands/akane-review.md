@@ -4,6 +4,8 @@ agent: build
 subtask: false
 ---
 
+<!-- managed-by: opencode-akane -->
+
 Load the `akane-workflow` skill, then use the `akane_review` tool in the current repository with both reviewers.
 
 Task: $ARGUMENTS

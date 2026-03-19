@@ -4,6 +4,8 @@ agent: build
 subtask: false
 ---
 
+<!-- managed-by: opencode-akane -->
+
 Load the `akane-workflow` skill, then use the `akane_plan` tool in the current repository.
 
 Task: $ARGUMENTS

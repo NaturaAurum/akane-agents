@@ -1,4 +1,5 @@
 import type { Plugin } from "@opencode-ai/plugin";
+import { bootstrapAkaneGlobalAssets } from "./bootstrap.js";
 import { loadAkaneConfig } from "./config.js";
 import { resolveArtifactDir } from "./artifacts.js";
 import { createAkaneInitTool } from "./tools/akane-init.js";
@@ -11,6 +12,7 @@ import { createAkaneSynthesizeTool } from "./tools/akane-synthesize.js";
 import { createAkaneRunTool } from "./tools/akane-run.js";
 
 export const AkanePlugin: Plugin = async (input) => {
+  await bootstrapAkaneGlobalAssets();
   const configInfo = await loadAkaneConfig();
 
   return {

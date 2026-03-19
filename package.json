@@ -28,6 +28,8 @@
   },
   "files": [
     "dist",
+    ".opencode/commands",
+    ".opencode/skills/akane-workflow/SKILL.md",
     "README.md",
     "examples/akane.example.json"
   ],
