@@ -56,6 +56,22 @@ Notes:
 - `akane_init` is optional because the stage tools lazily create `.opencode/akane/` on first use
 - `akane_run` is the main MVP entrypoint when you want to test the full workflow
 
+## Repo-local commands and skill
+
+This repository now includes project-local OpenCode command files in `.opencode/commands/` and a project-local skill at `.opencode/skills/akane-workflow/SKILL.md`.
+
+That gives you slash-command style entrypoints such as:
+
+- `/akane-init`
+- `/akane-plan`
+- `/akane-plan-review`
+- `/akane-implement`
+- `/akane-review`
+- `/akane-synthesize`
+- `/akane-run`
+
+The commands are thin wrappers that tell OpenCode to load the `akane-workflow` skill and then invoke the matching `akane_*` tool while reusing existing artifacts in `.opencode/akane/`.
+
 ## Package install
 
 For package-based installation, publish this repository to npm and add it to the OpenCode plugin array in `~/.config/opencode/opencode.json`:
